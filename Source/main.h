@@ -14,6 +14,7 @@ typedef struct Player
     int position;
     int point;
     float speed;
+    bool collision;
     Rectangle texture;
     Color color;
 } Player;
@@ -23,6 +24,7 @@ typedef struct Enemy
     int position;
     int point;
     float speed;
+    bool collision;
     Rectangle texture;
     Color color;
 } Enemy;
