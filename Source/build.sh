@@ -1,4 +1,4 @@
-COMPILER=clang
+COMPILER=gcc
 INPUT=main.c
 OUTPUT=pong.exe
 FLAGS=-o${OUTPUT}\ -Wall\ -Wextra\ -pedantic\ -fno-common\ -fno-builtin\ -mwindows
