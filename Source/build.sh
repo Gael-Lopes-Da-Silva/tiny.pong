@@ -1,14 +1,18 @@
-COMPILER=gcc
+#!/bin/sh
+
+COMPILER=cc
 INPUT=main.c
 OUTPUT=pong.exe
-FLAGS=-o${OUTPUT}\ -Wall\ -Wextra\ -pedantic\ -fno-common\ -fno-builtin\ -mwindows
-LIBS=-lraylib\ -lopengl32\ -lgdi32\ -lwinmm
+FLAGS="-o$OUTPUT -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindows"
+LIBS="-lraylib -lopengl32 -lgdi32 -lwinmm"
+
+set -xe
 
 if [ $# = 0 ] ; then
-    ${COMPILER} ${INPUT} ${FLAGS} ${LIBS}
+    $COMPILER $INPUT $FLAGS $LIBS
 
     if [ $? ] ; then
-        ./${OUTPUT}
+        ./$OUTPUT
     fi
 else
     if [ $1 = "help" -o $1 = "--help" -o $1 = "-h" ] ; then
@@ -17,6 +21,6 @@ else
     fi
 
     if [ $1 = "build" -o $1 = "--build" -o $1 = "-b" ] ; then
-        ${COMPILER} ${INPUT} ${FLAGS} ${LIBS}
+        $COMPILER $INPUT $FLAGS $LIBS
     fi
 fi
