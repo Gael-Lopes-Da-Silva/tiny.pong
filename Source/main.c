@@ -1,3 +1,9 @@
+/* 
+@author: Gael Lopes Da Silva
+@project: Pong Game
+@github: https://github.com/Gael-Lopes-Da-Silva/Pong
+*/
+
 #ifndef RAYLIB_LOADED
     #define RAYLIB_LOADED
     #include "raylib/raylib.h"

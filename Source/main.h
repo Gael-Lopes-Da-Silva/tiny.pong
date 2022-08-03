@@ -1,3 +1,9 @@
+/* 
+@author: Gael Lopes Da Silva
+@project: Pong Game
+@github: https://github.com/Gael-Lopes-Da-Silva/Pong
+*/
+
 #pragma once
 
 #ifndef RAYLIB_LOADED
