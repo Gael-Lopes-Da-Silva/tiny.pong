@@ -16,4 +16,4 @@ $ sh ./build.sh --help         # Display the build help
 $ sh ./build.sh --build        # Build the application
 ~~~
 
-test
+oskour
