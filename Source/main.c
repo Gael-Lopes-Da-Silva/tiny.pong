@@ -1,7 +1,8 @@
 /* 
 @author: Gael Lopes Da Silva
-@project: Pong Game
+@project: Pong
 @github: https://github.com/Gael-Lopes-Da-Silva/Pong
+@gitlab: https://gitlab.com/Gael-Lopes-Da-Silva/Pong
 */
 
 #ifndef RAYLIB_LOADED
@@ -13,7 +14,6 @@
 
 #include "main.h"
 
-// player
 void player_Draw(Player player)
 {
     DrawRectangleRec(player.texture, player.color);
@@ -28,7 +28,6 @@ void player_UpdatePosition(Player *player)
     player->texture.y = player->position;
 }
 
-// enemy
 void enemy_Draw(Enemy enemy)
 {
     DrawRectangleRec(enemy.texture, enemy.color);
@@ -52,7 +51,6 @@ void enemy_UpdatePosition(Enemy *enemy, Ball ball)
     }
 }
 
-// ball
 void ball_Draw(Ball ball)
 {
     DrawCircle(ball.position.x, ball.position.y, ball.size, ball.color);

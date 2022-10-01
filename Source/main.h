@@ -1,7 +1,8 @@
 /* 
 @author: Gael Lopes Da Silva
-@project: Pong Game
+@project: Pong
 @github: https://github.com/Gael-Lopes-Da-Silva/Pong
+@gitlab: https://gitlab.com/Gael-Lopes-Da-Silva/Pong
 */
 
 #pragma once
