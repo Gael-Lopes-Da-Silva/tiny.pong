@@ -6,6 +6,10 @@
 
 ---
 
+### 🖼️ Screenshot
+
+![](./Screenshots/Screenshot1.png)
+
 ### ❓ How to use the build script
 
 Before building, make sure you have a C compiler installed on your computer.
