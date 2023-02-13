@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "raymath.h": "c",
+        "reasings.h": "c"
+    }
+}

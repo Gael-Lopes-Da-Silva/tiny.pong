@@ -9,7 +9,7 @@
     #define RAYLIB_LOADED
     #include "raylib/raylib.h"
     #include "raylib/raymath.h"
-    #include "raylib/easings.h"
+    #include "raylib/reasings.h"
 #endif
 
 #include "main.h"
