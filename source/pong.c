@@ -12,7 +12,7 @@
     #include "raylib/reasings.h"
 #endif
 
-#include "main.h"
+#include "pong.h"
 
 void player_Draw(Player player)
 {
