@@ -5,15 +5,15 @@
 ---
 
 <p align="center">
-    :gear: This is a pong create in C with Raylib.
+    ⚙️ This is a pong create in C with Raylib.
 </p>
 
 ---
 
-### :framed_picture: Screenshot
+### 🖼️ Screenshot
 ![](./Screenshots/Screenshot1.png)
 
-### :question: How to use the build script
+### ❓ How to use the build script
 Before building, make sure you have a C compiler installed on your computer.
 
 ~~~console
