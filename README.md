@@ -13,7 +13,7 @@
 ### 🖼️ Screenshot
 ![](./screenshots/screenshot1.png)
 
-### :question: How to use the build script
+### :question: How to build
 Before building, make sure you have a C compiler installed on your computer.
 
 ~~~console
