@@ -5,7 +5,7 @@
 ---
 
 <p align="center">
-    :gear: This is a pong create in C with Raylib.
+    :gear: This is a pong game created in C with Raylib.
 </p>
 
 ---
