@@ -7,9 +7,9 @@
 
 #ifndef RAYLIB_LOADED
     #define RAYLIB_LOADED
-    #include "raylib.h"
-    #include "raymath.h"
-    #include "reasings.h"
+    #include "../include/raylib.h"
+    #include "../include/raymath.h"
+    #include "../include/reasings.h"
 #endif
 
 #include "pong.h"
