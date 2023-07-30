@@ -5,7 +5,7 @@
 ---
 
 <p align="center">
-    ⚙️ This is a pong create in C with Raylib.
+    :gear: This is a pong create in C with Raylib.
 </p>
 
 ---
@@ -13,18 +13,18 @@
 ### 🖼️ Screenshot
 ![](./screenshots/screenshot1.png)
 
-### ❓ How to use the build script
+### :question: How to use the build script
 Before building, make sure you have a C compiler installed on your computer.
 
 ~~~console
 # windows
-$ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindows -lraylib -lopengl32 -lgdi32 -lwinmm
+$ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindows -Iinclude/ -Llib/ -lraylib -lopengl32 -lgdi32 -lwinmm
 
 # linux
-$ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindows -lraylib -lGL -lm -lpthread -ldl -lrt
+$ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindows -Iinclude/ -Llib/ -lraylib -lGL -lm -lpthread -ldl -lrt
 
 # macos
-$ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindows -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+$ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindows -Iinclude/ -Llib/ -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 ~~~
 
 If you want a more customizable build method see [here](https://github.com/raysan5/raylib/blob/master/examples/Makefile).
