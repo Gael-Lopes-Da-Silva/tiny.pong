@@ -1,22 +1,18 @@
-<h3 align="center">
+<h1 align="center">
     Pong
-</h3>
-
----
+</h1>
 
 > [!NOTE]
 > This is a pong game created in C with Raylib.
 
----
-
-### 🖼️ Screenshot
+## 🖼️ Screenshot
 ![](./screenshots/screenshot1.png)
 
-### :question: How to build
+## ❓ How to build
 > [!IMPORTANT]
 > Before building, make sure you have a C compiler installed on your computer.
 
-~~~console
+~~~shell
 # windows
 $ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindows -Iinclude/ -Llib/ -lraylib -lopengl32 -lgdi32 -lwinmm
 
