@@ -13,30 +13,33 @@
 #define SCREEN_WIDTH 1360
 #define SCREEN_HEIGHT 760
 
-typedef struct Player {
-  int position;
-  int point;
-  float speed;
-  bool collision;
-  Rectangle texture;
-  Color color;
+typedef struct Player
+{
+	int position;
+	int point;
+	float speed;
+	bool collision;
+	Rectangle texture;
+	Color color;
 } Player;
 
-typedef struct Enemy {
-  int position;
-  int point;
-  float speed;
-  bool collision;
-  Rectangle texture;
-  Color color;
+typedef struct Enemy
+{
+	int position;
+	int point;
+	float speed;
+	bool collision;
+	Rectangle texture;
+	Color color;
 } Enemy;
 
-typedef struct Ball {
-  float size;
-  float speed;
-  Vector2 position;
-  Vector2 velocity;
-  Color color;
+typedef struct Ball
+{
+	float size;
+	float speed;
+	Vector2 position;
+	Vector2 velocity;
+	Color color;
 } Ball;
 
 void player_Draw(Player player);
