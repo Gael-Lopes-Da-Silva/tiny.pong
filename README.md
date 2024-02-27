@@ -8,9 +8,12 @@
 ![](./screenshots/screenshot1.png)
 
 ## ❓ How to build
-### ❗ Before building, make sure you have a C compiler installed on your computer.
+#### ❗ Before building, make sure you have a C compiler installed on your computer.
 
 ~~~shell
+git clone https://github.com/Gael-Lopes-Da-Silva/Pong
+cd Pong
+
 # windows
 $ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindows -Iinclude/ -Llib/ -lraylib -lopengl32 -lgdi32 -lwinmm
 
@@ -21,4 +24,4 @@ $ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindo
 $ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common -fno-builtin -mwindows -Iinclude/ -Llib/ -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 ~~~
 
-### 🗒️ If you want a more customizable build method see [here](https://github.com/raysan5/raylib/blob/master/examples/Makefile). If you want to build on android see [here](https://github.com/raysan5/raylib/blob/master/examples/Makefile.Android) and [here](https://github.com/raysan5/raylib/blob/master/examples/Makefile.Web) if you want to build for the web.
+#### 🗒️ If you want a more customizable build method see [here](https://github.com/raysan5/raylib/blob/master/examples/Makefile). If you want to build on android see [here](https://github.com/raysan5/raylib/blob/master/examples/Makefile.Android) and [here](https://github.com/raysan5/raylib/blob/master/examples/Makefile.Web) if you want to build for the web.
