@@ -3,16 +3,19 @@
 
 Description
 ------------------------------------------------------------------
+
 This is a pong game created in C with Raylib.
 
 
 Screenshots
 ------------------------------------------------------------------
+
 ./screenshots/screenshot1.png
 
 
 Installation
 ------------------------------------------------------------------
+
 Before building, make sure you have a C compiler installed on
 your computer.
 
@@ -38,6 +41,7 @@ cc pong.c -o pong.exe -Wall -Wextra -pedantic -fno-common
 
 Note
 ------------------------------------------------------------------
+
 If you want a more customizable build method see here:
 https://github.com/raysan5/raylib/blob/master/examples/Makefile
 If you want to build on android see here:
