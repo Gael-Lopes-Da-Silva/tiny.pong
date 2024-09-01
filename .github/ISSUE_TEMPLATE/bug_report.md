@@ -9,11 +9,10 @@ assignees: ''
 
 **Informations**
 
-- App version:
-
-**Description**
+- Version:
+- Description:
 
 **Steps to reproduce**
 
-1. 
+1.
 2.
