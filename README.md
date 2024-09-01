@@ -7,7 +7,7 @@
 Description
 ------------------------------------------------------------------
 
-This is a pong game made in Rust with (Ruscii)[https://github.com/lemunozm/ruscii].
+This is a pong game made in Rust with [Ruscii](https://github.com/lemunozm/ruscii).
 
 
 Usage
