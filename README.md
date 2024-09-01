@@ -16,6 +16,15 @@ Usage
 
 Run the executable in a terminal and enjoy.
 
+~~~
+Keybindings:
+    K, Up      Go up
+    J, Down    Go down
+    F3         Show debug infos
+    B          Player become a bot
+    Esc, Q     Quit
+~~~
+
 
 Build From Source
 ------------------------------------------------------------------
