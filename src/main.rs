@@ -34,6 +34,9 @@ struct Game {
     ball: Ball,
     state: States,
     winner: i8,
+    round: i32,
+    collid_count: i32,
+    bot_difficulty: i32,
 }
 
 impl Game {
@@ -58,6 +61,9 @@ impl Game {
             },
             state: States::Start,
             winner: 0,
+            round: 0,
+            collid_count: 0,
+            bot_difficulty: 1,
         }
     }
 
@@ -85,19 +91,19 @@ impl Game {
     fn update_bot(&mut self) {
         if self.ball.position.x > self.dimension.x / 2 {
             if self.ball.position.y < self.right_player.position.y {
-                self.right_player.velocity.y = -1;
+                self.right_player.velocity.y = -self.bot_difficulty;
             }
 
             if self.ball.position.y > self.right_player.position.y {
-                self.right_player.velocity.y = 1;
+                self.right_player.velocity.y = self.bot_difficulty;
             }
         } else {
             if self.right_player.position.y < self.dimension.y / 2 {
-                self.right_player.velocity.y = 1;
+                self.right_player.velocity.y = self.bot_difficulty;
             }
 
             if self.right_player.position.y > self.dimension.y / 2 {
-                self.right_player.velocity.y = -1;
+                self.right_player.velocity.y = -self.bot_difficulty;
             }
         }
     }
@@ -116,6 +122,7 @@ impl Game {
             && self.ball.position.y >= self.left_player.position.y - self.left_player.size.y / 2
         {
             self.ball.velocity.x *= -1;
+            self.collid_count += 1;
         }
 
         if self.ball.position.x >= self.right_player.position.x - 1
@@ -123,13 +130,18 @@ impl Game {
             && self.ball.position.y >= self.right_player.position.y - self.right_player.size.y / 2
         {
             self.ball.velocity.x *= -1;
+            self.collid_count += 1;
         }
 
         if self.ball.position.x <= 0 {
             self.ball.position = self.dimension / 2;
             self.random_ball_velocity();
             self.state = States::NextRound;
+
             self.right_player.score += 1;
+            self.round += 1;
+            self.collid_count = 0;
+            self.bot_difficulty = 1;
 
             self.left_player.position.y = self.dimension.y / 2;
             self.right_player.position.y = self.dimension.y / 2;
@@ -139,7 +151,11 @@ impl Game {
             self.ball.position = self.dimension / 2;
             self.random_ball_velocity();
             self.state = States::NextRound;
+
             self.left_player.score += 1;
+            self.round += 1;
+            self.collid_count = 0;
+            self.bot_difficulty = 1;
 
             self.left_player.position.y = self.dimension.y / 2;
             self.right_player.position.y = self.dimension.y / 2;
@@ -175,6 +191,9 @@ impl Game {
 
             self.left_player.score = 0;
             self.right_player.score = 0;
+            self.round = 0;
+            self.collid_count = 0;
+            self.bot_difficulty = 1;
         }
     }
 }
@@ -197,8 +216,8 @@ fn main() {
     app.run(|state: &mut State, window: &mut Window| {
         for key in state.keyboard().last_key_events() {
             match key {
-                KeyEvent::Pressed(Key::Esc) => state.stop(),
                 KeyEvent::Pressed(Key::Q) => state.stop(),
+                KeyEvent::Pressed(Key::Esc) => state.stop(),
                 KeyEvent::Pressed(Key::F3) => show_infos = !show_infos,
                 KeyEvent::Pressed(Key::Space) => match game.state {
                     States::Start | States::Paused | States::NextRound | States::Win => {
@@ -238,6 +257,24 @@ fn main() {
                 game.update();
                 game.update_bot();
                 game.check_win();
+
+                if game.collid_count == 5 {
+                    game.ball.velocity *= 2;
+                    game.bot_difficulty += 1;
+                    game.collid_count += 1;
+                }
+
+                if game.collid_count == 15 {
+                    game.ball.velocity *= 2;
+                    game.bot_difficulty += 1;
+                    game.collid_count += 1;
+                }
+
+                if game.collid_count == 35 {
+                    game.ball.velocity *= 2;
+                    game.bot_difficulty += 1;
+                    game.collid_count += 1;
+                }
             }
             States::Start => {
                 scoreboard = "Press space to start".to_string();
@@ -321,6 +358,12 @@ fn main() {
             pencil.set_foreground(Color::White);
             pencil.set_style(Style::Plain);
             pencil.draw_text(&format!("FPS: {}", fps.count()), Vec2::xy(2, 1));
+            pencil.draw_text(&format!("ROUND: {}", game.round), Vec2::xy(2, 2));
+            pencil.draw_text(&format!("COLLID: {}", game.collid_count), Vec2::xy(2, 3));
+            pencil.draw_text(
+                &format!("DIFFICULTY: {}", game.bot_difficulty),
+                Vec2::xy(2, 4),
+            );
         }
     });
 }

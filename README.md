@@ -7,12 +7,13 @@
 Description
 ------------------------------------------------------------------
 
-This is a pong game made in Rust with (Bevy)[https://github.com/bevyengine/bevy].
+This is a pong game made in Rust with (Ruscii)[https://github.com/lemunozm/ruscii].
 
 
 Usage
 ------------------------------------------------------------------
 
+Run the executable in a terminal and enjoy.
 
 
 Build From Source
@@ -23,5 +24,5 @@ Make sure to have a ready to use installation of rust. More info [here](https://
 ~~~
 git clone https://github.com/Gael-Lopes-Da-Silva/tiny.pong.git
 cd tiny.pong
-cargo build
+cargo build --release
 ~~~
