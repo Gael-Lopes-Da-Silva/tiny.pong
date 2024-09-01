@@ -1,3 +1,5 @@
+use std::io::Cursor;
+
 use ruscii::app::*;
 use ruscii::drawing::*;
 use ruscii::gui::*;
@@ -7,6 +9,13 @@ use ruscii::terminal::*;
 
 use rand::prelude::*;
 
+use rodio::*;
+
+static WIN: &[u8] = include_bytes!("assets/win.wav").as_slice();
+static BOUNCE: &[u8] = include_bytes!("assets/bounce.wav").as_slice();
+static EXPLOSION: &[u8] = include_bytes!("assets/explosion.wav").as_slice();
+static START: &[u8] = include_bytes!("assets/start.wav").as_slice();
+
 enum States {
     Start,
     Playing,
@@ -15,16 +24,31 @@ enum States {
     Win,
 }
 
+struct Vector2 {
+    x: f64,
+    y: f64,
+}
+
+impl Vector2 {
+    fn new(x: f64, y: f64) -> Self {
+        Self { x, y }
+    }
+
+    fn zero() -> Self {
+        Self { x: 0.0, y: 0.0 }
+    }
+}
+
 struct Entity {
-    position: Vec2,
-    velocity: Vec2,
-    size: Vec2,
+    position: Vector2,
+    velocity: Vector2,
+    size: Vector2,
     score: i32,
 }
 
 struct Ball {
-    position: Vec2,
-    velocity: Vec2,
+    position: Vector2,
+    velocity: Vector2,
 }
 
 struct Game {
@@ -37,138 +61,166 @@ struct Game {
     round: i32,
     collid_count: i32,
     bot_difficulty: i32,
+    stream_handle: OutputStreamHandle,
 }
 
 impl Game {
-    fn new(screen: Vec2) -> Self {
+    fn new(dimension: Vec2, stream_handle: OutputStreamHandle) -> Self {
         Self {
-            dimension: screen,
+            dimension,
             left_player: Entity {
-                position: Vec2::zero(),
-                velocity: Vec2::zero(),
-                size: Vec2::xy(3, 8),
+                position: Vector2::zero(),
+                velocity: Vector2::zero(),
+                size: Vector2::new(3.0, 8.0),
                 score: 0,
             },
             right_player: Entity {
-                position: Vec2::zero(),
-                velocity: Vec2::zero(),
-                size: Vec2::xy(3, 8),
+                position: Vector2::zero(),
+                velocity: Vector2::zero(),
+                size: Vector2::new(3.0, 8.0),
                 score: 0,
             },
             ball: Ball {
-                position: screen / 2,
-                velocity: Vec2::xy(0, 0),
+                position: Vector2::new(dimension.x as f64 / 2.0, dimension.y as f64 / 2.0),
+                velocity: Vector2::zero(),
             },
             state: States::Start,
             winner: 0,
             round: 0,
             collid_count: 0,
             bot_difficulty: 1,
+            stream_handle,
         }
     }
 
-    fn update(&mut self) {
-        self.ball.position += self.ball.velocity;
-
-        self.left_player.position += self.left_player.velocity;
-        self.left_player.position.y = self.left_player.position.y.clamp(
-            0 + self.left_player.size.y / 2,
-            self.dimension.y - self.left_player.size.y / 2,
-        );
-
-        self.right_player.position += self.right_player.velocity;
-        self.right_player.position.y = self.right_player.position.y.clamp(
-            0 + self.right_player.size.y / 2,
-            self.dimension.y - self.right_player.size.y / 2,
-        );
-
-        self.check_collisions();
-
-        self.left_player.velocity.y = 0;
-        self.right_player.velocity.y = 0;
+    fn update_ball(&mut self) {
+        self.ball.position.x += self.ball.velocity.x;
+        self.ball.position.y += self.ball.velocity.y;
     }
 
-    fn update_bot(&mut self) {
-        if self.ball.position.x > self.dimension.x / 2 {
+    fn update_entities(&mut self) {
+        self.left_player.position.x += self.left_player.velocity.x;
+        self.left_player.position.y += self.left_player.velocity.y;
+
+        self.left_player.position.y = self.left_player.position.y.clamp(
+            0.0 + self.left_player.size.y / 2.0,
+            self.dimension.y as f64 - self.left_player.size.y / 2.0,
+        );
+
+        self.left_player.velocity.y = 0.0;
+
+        self.right_player.position.x += self.right_player.velocity.x;
+        self.right_player.position.y += self.right_player.velocity.y;
+
+        self.right_player.position.y = self.right_player.position.y.clamp(
+            0.0 + self.right_player.size.y / 2.0,
+            self.dimension.y as f64 - self.right_player.size.y / 2.0,
+        );
+
+        self.right_player.velocity.y = 0.0;
+    }
+
+    fn update_bot(&mut self, player_bot: bool) {
+        if self.ball.position.x > self.dimension.x as f64 / 2.0 {
             if self.ball.position.y < self.right_player.position.y {
-                self.right_player.velocity.y = -self.bot_difficulty;
+                self.right_player.velocity.y = -self.bot_difficulty as f64;
             }
 
             if self.ball.position.y > self.right_player.position.y {
-                self.right_player.velocity.y = self.bot_difficulty;
+                self.right_player.velocity.y = self.bot_difficulty as f64;
             }
         } else {
-            if self.right_player.position.y < self.dimension.y / 2 {
-                self.right_player.velocity.y = self.bot_difficulty;
+            if self.right_player.position.y < self.dimension.y as f64 / 2.0 - 1.0 {
+                self.right_player.velocity.y = self.bot_difficulty as f64;
             }
 
-            if self.right_player.position.y > self.dimension.y / 2 {
-                self.right_player.velocity.y = -self.bot_difficulty;
+            if self.right_player.position.y > self.dimension.y as f64 / 2.0 + 1.0 {
+                self.right_player.velocity.y = -self.bot_difficulty as f64;
+            }
+        }
+
+        if !player_bot {
+            return;
+        }
+
+        if self.ball.position.x < self.dimension.x as f64 / 2.0 {
+            if self.ball.position.y < self.left_player.position.y {
+                self.left_player.velocity.y = -self.bot_difficulty as f64;
+            }
+
+            if self.ball.position.y > self.left_player.position.y {
+                self.left_player.velocity.y = self.bot_difficulty as f64;
+            }
+        } else {
+            if self.left_player.position.y < self.dimension.y as f64 / 2.0 - 1.0 {
+                self.left_player.velocity.y = self.bot_difficulty as f64;
+            }
+
+            if self.left_player.position.y > self.dimension.y as f64 / 2.0 + 1.0 {
+                self.left_player.velocity.y = -self.bot_difficulty as f64;
             }
         }
     }
 
     fn check_collisions(&mut self) {
-        if self.ball.position.y <= 0 {
-            self.ball.velocity.y *= -1;
+        if self.ball.position.y <= 0.0 {
+            self.ball.velocity.y *= -1.0;
         }
 
-        if self.ball.position.y >= self.dimension.y - 1 {
-            self.ball.velocity.y *= -1;
+        if self.ball.position.y >= (self.dimension.y - 1) as f64 {
+            self.ball.velocity.y *= -1.0;
         }
 
         if self.ball.position.x <= self.left_player.position.x + self.left_player.size.x
-            && self.ball.position.y <= self.left_player.position.y + self.left_player.size.y / 2
-            && self.ball.position.y >= self.left_player.position.y - self.left_player.size.y / 2
+            && self.ball.position.y <= self.left_player.position.y + self.left_player.size.y / 2.0
+            && self.ball.position.y >= self.left_player.position.y - self.left_player.size.y / 2.0
         {
-            self.ball.velocity.x *= -1;
+            self.ball.velocity.x *= -1.0;
             self.collid_count += 1;
+
+            self.play_sound("bounce");
         }
 
-        if self.ball.position.x >= self.right_player.position.x - 1
-            && self.ball.position.y <= self.right_player.position.y + self.right_player.size.y / 2
-            && self.ball.position.y >= self.right_player.position.y - self.right_player.size.y / 2
+        if self.ball.position.x >= self.right_player.position.x - 1.0
+            && self.ball.position.y <= self.right_player.position.y + self.right_player.size.y / 2.0
+            && self.ball.position.y >= self.right_player.position.y - self.right_player.size.y / 2.0
         {
-            self.ball.velocity.x *= -1;
+            self.ball.velocity.x *= -1.0;
             self.collid_count += 1;
-        }
 
-        if self.ball.position.x <= 0 {
-            self.ball.position = self.dimension / 2;
-            self.random_ball_velocity();
-            self.state = States::NextRound;
-
-            self.right_player.score += 1;
-            self.round += 1;
-            self.collid_count = 0;
-            self.bot_difficulty = 1;
-
-            self.left_player.position.y = self.dimension.y / 2;
-            self.right_player.position.y = self.dimension.y / 2;
-        }
-
-        if self.ball.position.x >= self.dimension.x - 1 {
-            self.ball.position = self.dimension / 2;
-            self.random_ball_velocity();
-            self.state = States::NextRound;
-
-            self.left_player.score += 1;
-            self.round += 1;
-            self.collid_count = 0;
-            self.bot_difficulty = 1;
-
-            self.left_player.position.y = self.dimension.y / 2;
-            self.right_player.position.y = self.dimension.y / 2;
+            self.play_sound("bounce");
         }
     }
 
-    fn random_ball_velocity(&mut self) {
-        let mut rng = rand::thread_rng();
+    fn check_scored(&mut self) {
+        let mut scored = false;
 
-        let x: bool = rng.gen();
-        let y: bool = rng.gen();
+        if self.ball.position.x <= 0.0 {
+            self.right_player.score += 1;
+            scored = true;
+        }
 
-        self.ball.velocity = Vec2::xy(if x { 1 } else { -1 } * 2, if y { -1 } else { 1 });
+        if self.ball.position.x >= (self.dimension.x - 1) as f64 {
+            self.left_player.score += 1;
+            scored = true;
+        }
+
+        if scored {
+            self.ball.position.x = self.dimension.x as f64 / 2.0;
+            self.ball.position.y = self.dimension.y as f64 / 2.0;
+
+            self.random_ball_velocity();
+            self.state = States::NextRound;
+
+            self.round += 1;
+            self.collid_count = 0;
+            self.bot_difficulty = 1;
+
+            self.left_player.position.y = self.dimension.y as f64 / 2.0;
+            self.right_player.position.y = self.dimension.y as f64 / 2.0;
+
+            self.play_sound("explosion");
+        }
     }
 
     fn check_win(&mut self) {
@@ -183,44 +235,82 @@ impl Game {
                 self.winner = 2;
             }
 
-            self.ball.position = self.dimension / 2;
+            self.ball.position.x = self.dimension.x as f64 / 2.0;
+            self.ball.position.y = self.dimension.y as f64 / 2.0;
+
             self.random_ball_velocity();
 
-            self.left_player.position.y = self.dimension.y / 2;
-            self.right_player.position.y = self.dimension.y / 2;
+            self.left_player.position.y = self.dimension.y as f64 / 2.0;
+            self.right_player.position.y = self.dimension.y as f64 / 2.0;
 
             self.left_player.score = 0;
             self.right_player.score = 0;
             self.round = 0;
             self.collid_count = 0;
             self.bot_difficulty = 1;
+
+            self.play_sound("win");
         }
+    }
+
+    fn random_ball_velocity(&mut self) {
+        let mut rng = rand::thread_rng();
+
+        let x: bool = rng.gen();
+        let y: bool = rng.gen();
+
+        self.ball.velocity =
+            Vector2::new(if x { 1.0 } else { -1.0 } * 2.0, if y { -1.0 } else { 1.0 });
+    }
+
+    fn play_sound(&mut self, sound: &str) {
+        self.stream_handle
+            .play_raw(
+                Decoder::new(Cursor::new(match sound {
+                    "win" => WIN,
+                    "bounce" => BOUNCE,
+                    "explosion" => EXPLOSION,
+                    "start" => START,
+                    _ => b"",
+                }))
+                .unwrap()
+                .convert_samples(),
+            )
+            .unwrap();
     }
 }
 
 fn main() {
-    let mut app = App::default();
-    let mut fps = FPSCounter::default();
+    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
 
     let mut show_infos = false;
+    let mut player_bot = false;
 
-    let mut game = Game::new(app.window().size());
+    let mut app = App::config(Config { fps: 60 });
+    let mut fps_counter = FPSCounter::default();
+    let mut game = Game::new(app.window().size(), stream_handle);
+
     game.random_ball_velocity();
 
-    game.left_player.position = Vec2::xy(0, game.dimension.y / 2);
-    game.right_player.position = Vec2::xy(
-        game.dimension.x - game.right_player.size.x,
-        game.dimension.y / 2,
+    game.left_player.position = Vector2::new(0.0, game.dimension.y as f64 / 2.0);
+    game.right_player.position = Vector2::new(
+        game.dimension.x as f64 - game.right_player.size.x,
+        game.dimension.y as f64 / 2.0,
     );
 
     app.run(|state: &mut State, window: &mut Window| {
         for key in state.keyboard().last_key_events() {
             match key {
-                KeyEvent::Pressed(Key::Q) => state.stop(),
                 KeyEvent::Pressed(Key::Esc) => state.stop(),
+                KeyEvent::Pressed(Key::Q) => state.stop(),
                 KeyEvent::Pressed(Key::F3) => show_infos = !show_infos,
+                KeyEvent::Pressed(Key::B) => player_bot = !player_bot,
                 KeyEvent::Pressed(Key::Space) => match game.state {
-                    States::Start | States::Paused | States::NextRound | States::Win => {
+                    States::Start => {
+                        game.state = States::Playing;
+                        game.play_sound("start");
+                    }
+                    States::Paused | States::NextRound | States::Win => {
                         game.state = States::Playing;
                     }
                     States::Playing => {
@@ -237,15 +327,17 @@ fn main() {
             }
         }
 
-        for key in state.keyboard().get_keys_down() {
-            match key {
-                Key::Up | Key::K => game.left_player.velocity.y = -1,
-                Key::Down | Key::J => game.left_player.velocity.y = 1,
-                _ => {}
+        if !player_bot {
+            for key in state.keyboard().get_keys_down() {
+                match key {
+                    Key::Up | Key::K => game.left_player.velocity.y = -1.0,
+                    Key::Down | Key::J => game.left_player.velocity.y = 1.0,
+                    _ => {}
+                }
             }
         }
 
-        fps.update();
+        fps_counter.update();
 
         let mut scoreboard = format!(
             " LEFT {}     {} RIGHT",
@@ -254,24 +346,25 @@ fn main() {
 
         match game.state {
             States::Playing => {
-                game.update();
-                game.update_bot();
+                game.update_ball();
+                game.update_entities();
+                game.update_bot(player_bot);
+                game.check_collisions();
+                game.check_scored();
                 game.check_win();
 
                 if game.collid_count == 5 {
-                    game.ball.velocity *= 2;
+                    game.ball.velocity.x *= 1.5;
+                    game.ball.velocity.y *= 1.5;
+
                     game.bot_difficulty += 1;
                     game.collid_count += 1;
                 }
 
                 if game.collid_count == 15 {
-                    game.ball.velocity *= 2;
-                    game.bot_difficulty += 1;
-                    game.collid_count += 1;
-                }
+                    game.ball.velocity.x *= 1.5;
+                    game.ball.velocity.y *= 1.5;
 
-                if game.collid_count == 35 {
-                    game.ball.velocity *= 2;
                     game.bot_difficulty += 1;
                     game.collid_count += 1;
                 }
@@ -314,21 +407,27 @@ fn main() {
         pencil.set_style(Style::Plain);
         pencil.draw_rect(
             &RectCharset::simple_round_lines(),
-            game.left_player.position - Vec2::y(game.left_player.size.y / 2),
-            game.left_player.size,
+            Vec2::xy(
+                game.left_player.position.x,
+                game.left_player.position.y - game.left_player.size.y / 2.0,
+            ),
+            Vec2::xy(game.left_player.size.x, game.left_player.size.y),
         );
 
         pencil.set_foreground(Color::Blue);
         pencil.set_style(Style::Plain);
         pencil.draw_rect(
             &RectCharset::simple_round_lines(),
-            game.right_player.position - Vec2::y(game.right_player.size.y / 2),
-            game.right_player.size,
+            Vec2::xy(
+                game.right_player.position.x,
+                game.right_player.position.y - game.right_player.size.y / 2.0,
+            ),
+            Vec2::xy(game.right_player.size.x, game.right_player.size.y),
         );
 
         pencil.set_foreground(Color::Yellow);
         pencil.set_style(Style::Bold);
-        pencil.draw_char('⬤', game.ball.position);
+        pencil.draw_char('⬤', Vec2::xy(game.ball.position.x, game.ball.position.y));
 
         pencil.set_foreground(Color::Yellow);
         pencil.set_style(Style::Bold);
@@ -357,13 +456,14 @@ fn main() {
         if show_infos {
             pencil.set_foreground(Color::White);
             pencil.set_style(Style::Plain);
-            pencil.draw_text(&format!("FPS: {}", fps.count()), Vec2::xy(2, 1));
+            pencil.draw_text(&format!("FPS: {}", fps_counter.count()), Vec2::xy(2, 1));
             pencil.draw_text(&format!("ROUND: {}", game.round), Vec2::xy(2, 2));
             pencil.draw_text(&format!("COLLID: {}", game.collid_count), Vec2::xy(2, 3));
             pencil.draw_text(
                 &format!("DIFFICULTY: {}", game.bot_difficulty),
                 Vec2::xy(2, 4),
             );
+            pencil.draw_text(&format!("PLAYER_BOT: {}", player_bot), Vec2::xy(2, 4));
         }
     });
 }

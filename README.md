@@ -8,6 +8,7 @@ Description
 ------------------------------------------------------------------
 
 This is a pong game made in Rust with [Ruscii](https://github.com/lemunozm/ruscii).
+Sounds made with [Rfxgen](https://github.com/raysan5/rfxgen).
 
 
 Usage
