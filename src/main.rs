@@ -93,6 +93,16 @@ impl Game {
         }
     }
 
+    fn setup(&mut self) {
+        self.random_ball_velocity();
+
+        self.left_player.position = Vector2::new(0.0, self.dimension.y as f64 / 2.0);
+        self.right_player.position = Vector2::new(
+            self.dimension.x as f64 - self.right_player.size.x,
+            self.dimension.y as f64 / 2.0,
+        );
+    }
+
     fn update_ball(&mut self) {
         self.ball.position.x += self.ball.velocity.x;
         self.ball.position.y += self.ball.velocity.y;
@@ -281,22 +291,15 @@ impl Game {
 }
 
 fn main() {
-    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+    let mut app = App::config(Config { fps: 60 });
+    let mut fps_counter = FPSCounter::default();
 
     let mut show_infos = false;
     let mut player_bot = false;
 
-    let mut app = App::config(Config { fps: 60 });
-    let mut fps_counter = FPSCounter::default();
+    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
     let mut game = Game::new(app.window().size(), stream_handle);
-
-    game.random_ball_velocity();
-
-    game.left_player.position = Vector2::new(0.0, game.dimension.y as f64 / 2.0);
-    game.right_player.position = Vector2::new(
-        game.dimension.x as f64 - game.right_player.size.x,
-        game.dimension.y as f64 / 2.0,
-    );
+    game.setup();
 
     app.run(|state: &mut State, window: &mut Window| {
         for key in state.keyboard().last_key_events() {
