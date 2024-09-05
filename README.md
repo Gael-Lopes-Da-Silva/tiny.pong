@@ -18,10 +18,11 @@ Run the executable in a terminal and enjoy.
 
 ~~~
 Keybindings:
-    K, Up      Go up
-    J, Down    Go down
+    Up, Down   Move up or down
+    K, J       Move up or down
     F3         Show debug infos
     B          Player become a bot
+    Space      Toggle pause
     Esc, Q     Quit
 ~~~
 
